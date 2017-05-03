@@ -1,0 +1,86 @@
+// Fonts
+//
+
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400')
+
+// Project Colors
+//
+$dark-gray: #333
+$gray: #666
+$light-gray: #aaa
+
+$light-font: #ddd
+
+// Constants
+//
+
+$font-stack: 'Open Sans', 'sans-serif'
+$vis-width: 66%
+
+// Elements
+//
+
+body
+  margin: 0
+  position: fixed
+  top: 0
+  right: 0
+  bottom: 0
+  left: 0
+  font-family: $font-stack
+
+article
+  width: 100%
+  height: 100%
+  font-family: $font-stack
+
+  h1
+    color: $light-font
+    font-weight: 300
+    background: $dark-gray
+    margin: 0px
+    text-align: right
+    font-size: 3em
+    padding-top: 30px
+    padding-right: 100% - $vis-width
+    padding-bottom: 30px
+
+
+.article-content
+  width: 100%
+  height: 100%
+  margin: 0 auto
+
+.article-column-left
+  float: left
+  height: 100%
+  width: $vis-width
+
+.article-column-right
+  float: right
+  width: 100% - $vis-width
+  box-shadow: inset 3px 0px 10px
+  background-color: lighten($gray, 20%)
+  height: 100%
+
+.article-column-right-inset
+  padding-left: 10px
+  padding-top: 10px
+
+#nav-container
+
+  ul
+    list-style-type: none
+    color: white
+    line-height: 1.5em
+    padding-left: 20px
+
+article > footer
+  clear: both
+
+svg
+  width: 100%
+
+.bottom-focus
+  background-color: $dark-gray
+  height: 100%
