@@ -56,14 +56,14 @@ Database = function() {
   };
 
   this.AssnScores2Box = function() {
-    // returns [{xlabel:"assn_name", tiles:[min,q1,..,max]}]
+    // returns [{label:"assn_name", values:[v0,v1,...,vn]}]
     var scores = this.AssignmentScoresSorted();
     var box_data = [];
     for (var key in scores) {
       var sc = scores[key];
       box_data.push({
-        xlabel: this.base_assignments[key].name,
-        tiles: quartiles(sc)
+        label: this.base_assignments[key].name,
+        values: sc
       });
     }
     return box_data;
@@ -93,9 +93,7 @@ BoxPlotView = function() {
     this.view_svg = d3.select("#main-view-container").append("svg");
     this.view_svg
       .attr("preserveAspectRatio", "xMinYMin meet")
-      .attr("viewBox", "0 0 " + this.getViewWidth() + " " + this.getViewHeight())
-      .classed("svg-content", true);
-
+      .attr("viewBox", "0 0 " + this.getViewWidth() + " " + this.getViewHeight());
     // the magic:
     this.setBoxPlotData(this.db.AssnScores2Box());
   };
@@ -110,37 +108,59 @@ BoxPlotView = function() {
 
   this.setBoxPlotData = function(data) {
     // input: data of the form: [{xlabel:"", data:[]}]
-    var val_min = d3.min(data, function(a){return d3.min(a.tiles);});
-    var val_max = d3.max(data, function(a){return d3.max(a.tiles);});
-    var val_count;
+    var label_span = 0.2; // % of space reserved for labels
+    var margin_x = 20;
+    var margin_y = 20;
+    var text_angle = 60;
+    var label_y_offset = (1-label_span) * this.getViewHeight();
+    var domain = [
+        0,
+        d3.max(data, function(d){return d3.max(d.values);})
+      ];
 
-    var hor_margin = 20;
     var x_scale = d3.scaleBand()
       .round(true)
-      .range([hor_margin, this.getViewWidth()-hor_margin])
+      .range([margin_x, this.getViewWidth() - (margin_x * 2)])
       .domain(data.map(function(d) {
-        return d.xlabel;
-      }));
+        return d.label;
+      }))
+      .padding(0.8);
 
-    var y_scale = d3.scaleLinear()
-      .range([0, this.getViewHeight()])
-      .domain([val_min, val_max]);
+    var chart = d3.box()
+      .domain(domain)
+      .height(this.getViewHeight() * (1-label_span) - margin_y * 2)
+      .width(x_scale.bandwidth());
 
-    var labels_container =
-      this.view_svg.append("g")
-        .attr("transform", "translate(0 " + (this.getViewHeight() * 0.9) + ")")
+    // bind a g to each data. Within each g, we'll add a label and a box
+    var boundG = this.view_svg.selectAll("g.box")
+      .data(data)
+      .enter()
+      .append("g")
+      .attr("class", "box")
+      .attr("transform", function(d) {
+        return "translate(" + x_scale(d.label) + "," + margin_y + ")";
+      });
 
-    labels_container
-      .selectAll("g")
-        .data(data)
-        .enter()
-        .append("text")
-        .attr("x", function(d, i) {return x_scale(d.xlabel)})
-        .attr("y", 0)
-        .attr("fill", '#000')
-        .style("text-anchor", "start")
-        .attr("transform", function(d) {return "rotate(60," + x_scale(d.xlabel) + ",0)"})
-        .text(function(d){return d.xlabel});
+    var boundBox = boundG.selectAll("g.box")
+      .data(function(d) {return [d.values];})
+      .enter()
+      .call(chart);
+
+    var labels = boundG.selectAll("text.boxLabel")
+      .data(function(d) {
+        return [d3.select(this).data()[0].label];
+      })
+      .enter()
+      .append("text")
+      .attr("class", "boxLabel")
+      .attr("transform", "translate(0," + label_y_offset + ")rotate("+text_angle+")")
+      .text(function(d) {console.log(d);return d;});
+
+    //var lines = boundG.selectAll("line.lgd")
+    //  .data(d3.range(0,50,10))
+    //  .enter()
+    //  .attr("x", 0)
+    //  .attr("y", )
   };
 };
 

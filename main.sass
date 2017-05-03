@@ -84,3 +84,19 @@ svg
 .bottom-focus
   background-color: $dark-gray
   height: 100%
+
+// boxplot styling
+
+.box line,
+.box rect,
+.box circle
+  fill: #fff
+  stroke: #000
+  stroke-width: 1.5px
+
+.box .center
+  stroke-dasharray: 3,3
+
+.box .outlier
+  fill: none
+  stroke: #ccc

@@ -18,91 +18,17 @@ BoxPlotView = function() {
     var height = this.container.height;
 
     var x_scale = d3.scaleBand()
-      .domain(this.data.values.map(function(d) {return d.name;}))
+      .domain(d3.range(this.data.values.length))
       .range([0, width])
       .padding((width-(this.data.values.length * kBandwidth)) / width);
 
-    var y_scale = d3.scaleLinear()
-      .domain(this.data.domain)
-      .range([0, height]);
+    var chart = d3.box().domain([0, this.data.max]);
 
     // create a box for each data
-
-
-    var centerline = this.container.pane
-      .selectAll("line.center")
-      .data(this.data.values);
-
-    centerline.enter()
-      .insert("line")
-      .attr("class", "center")
-      .attr("x1", function(d) { return x_scale(d.name) + x_scale.bandwidth()/2;})
-      .attr("y1", function(d) { return y_scale(d.min); })
-      .attr("x2", function(d, i) { return x_scale(d.name) + x_scale.bandwidth()/2;})
-      .attr("y2", function(d) { return y_scale(d.max); });
-
-    var qbox = this.container.pane
-      .selectAll("rect.qbox")
-      .data(this.data.values);
-
-    qbox.enter()
-      .insert("rect")
-      .attr("class", "qbox")
-      .attr("x", function(d) {return x_scale(d.name);})
-      .attr("width", x_scale.bandwidth())
-      .attr("y", function(d) {return y_scale(d.qtile[0]);})
-      .attr("height", function(d) {return y_scale(d.qtile[2]) - y_scale(d.qtile[0]);});
-
-    var midline = this.container.pane
-      .selectAll("line.midline")
-      .data(this.data.values);
-
-    midline.enter()
-      .insert("line")
-      .attr("class", "midline")
-      .attr("x1", function(d) {return x_scale(d.name);})
-      .attr("y1", function(d) {return y_scale(d.qtile[1]); })
-      .attr("x2", function(d) {return x_scale(d.name) + x_scale.bandwidth();})
-      .attr("y2", function(d) { return y_scale(d.qtile[1]); });
-
-    var mins = this.container.pane
-      .selectAll("line.min")
-      .data(this.data.values);
-
-    mins.enter()
-      .insert("line")
-      .attr("class", "min")
-      .attr("x1", function(d) {return x_scale(d.name);})
-      .attr("y1", function(d) {return y_scale(d.min); })
-      .attr("x2", function(d) {return x_scale(d.name) + x_scale.bandwidth();})
-      .attr("y2", function(d) { return y_scale(d.min); });
-
-    var maxs = this.container.pane
-      .selectAll("line.max")
-      .data(this.data.values);
-
-    maxs.enter()
-      .insert("line")
-      .attr("class", "max")
-      .attr("x1", function(d) {return x_scale(d.name);})
-      .attr("y1", function(d) {return y_scale(d.max); })
-      .attr("x2", function(d) {return x_scale(d.name) + x_scale.bandwidth();})
-      .attr("y2", function(d) { return y_scale(d.max); });
-
-    var labels = this.container.pane.selectAll("text.label")
-      .data(this.data.values);
-
-    labels.enter().append("text")
-      .attr("class", "label")
-      .attr("dy", "12px")
-      .attr("dx", x_scale.bandwidth() + 3)
-      .attr("x", function(d){return x_scale(d.name);})
-      .attr("y", function(d){return y_scale(d.qtile[0]);})
-      .text(function(d) {return "" + Math.round(d.qtile[0]*100)/100})
-
-    var glabels = this.container.pane
-      .selectAll("g.label")
-      .data(this.data.values);
+    var boundG = this.container.selectAll("g")
+      .data(this.data)
+      .attr("transform", function(d) {return "translate(" + x_scale(i) + ",0)";});
+    boundG.call(chart);
   };
 
   this.update = function(data) {
