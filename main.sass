@@ -11,6 +11,8 @@ $light-gray: #aaa
 
 $light-font: #ddd
 
+$highlight: #ff9489
+
 // Constants
 //
 
@@ -68,6 +70,9 @@ article
   padding-top: 10px
 
 #nav-container
+  overflow-y: scroll
+  height: 100%
+  width: 100%
 
   ul
     list-style-type: none
@@ -100,3 +105,10 @@ svg
 .box .outlier
   fill: none
   stroke: #ccc
+
+// heatmap styling
+.heatmap
+  text
+    font-size: 0.1em
+  .hl
+    fill: $highlight
