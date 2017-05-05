@@ -85,97 +85,32 @@ Database = function() {
   };
 
   this.GetStudents = function() {
-    // list of student objects
-    //
     return this.base_students.map(
-        function(d) { return { "name" : d.sortable_name, "id" : d.id }; }
-      );
-
-  }
-};
-
-
-BoxPlotView = function() {
-  // contains logic for creating and updating a box plot graph.
-
-  this.init = function(db) {
-    // Must be called before any of the other functions.
-
-    this.db = db;
-    this.base_data = db.base_data;
-
-    // graphical elements:
-    this.view_svg = d3.select("#main-view-container").append("svg");
-    this.view_svg
-      .attr("preserveAspectRatio", "xMinYMin meet")
-      .attr("viewBox", "0 0 " + this.getViewWidth() + " " + this.getViewHeight());
-    // the magic:
-    this.setBoxPlotData(this.db.AssnScores2Box());
+      function (d) {
+        return {"name": d.sortable_name, "id": d.id};
+      }
+    );
   };
 
-  this.getViewHeight = function() {
-    return 620;
+  this.GetAssignments = function() {
+    return this.base_assignments.map(
+      function(d) { return { "name" : d.name, "id" : d.id }; }
+    );
   };
 
-  this.getViewWidth = function() {
-    return 1000;
-  };
-
-  this.setBoxPlotData = function(data) {
-    // input: data of the form: [{xlabel:"", data:[]}]
-    var label_span = 0.2; // % of space reserved for labels
-    var margin_x = 20;
-    var margin_y = 20;
-    var text_angle = 60;
-    var label_y_offset = (1-label_span) * this.getViewHeight();
-    var domain = [
-        0,
-        d3.max(data, function(d){return d3.max(d.values);})
-      ];
-
-    var x_scale = d3.scaleBand()
-      .round(true)
-      .range([margin_x, this.getViewWidth() - (margin_x * 2)])
-      .domain(data.map(function(d) {
-        return d.label;
-      }))
-      .padding(0.8);
-
-    var chart = d3.box()
-      .domain(domain)
-      .height(this.getViewHeight() * (1-label_span) - margin_y * 2)
-      .width(x_scale.bandwidth());
-
-    // bind a g to each data. Within each g, we'll add a label and a box
-    var boundG = this.view_svg.selectAll("g.box")
-      .data(data)
-      .enter()
-      .append("g")
-      .attr("class", "box")
-      .attr("transform", function(d) {
-        return "translate(" + x_scale(d.label) + "," + margin_y + ")";
-      });
-
-    var boundBox = boundG.selectAll("g.box")
-      .data(function(d) {return [d.values];})
-      .enter()
-      .call(chart);
-
-    var labels = boundG.selectAll("text.boxLabel")
-      .data(function(d) {
-        return [d3.select(this).data()[0].label];
-      })
-      .enter()
-      .append("text")
-      .attr("class", "boxLabel")
-      .attr("transform", "translate(0," + label_y_offset + ")rotate("+text_angle+")")
-      .text(function(d) {console.log(d);return d;});
-
-    //var lines = boundG.selectAll("line.lgd")
-    //  .data(d3.range(0,50,10))
-    //  .enter()
-    //  .attr("x", 0)
-    //  .attr("y", )
+  this.GetScores = function() {
+    // returns [{id, name, score, assn}]
+    var assn_names = this.base_assignments.map(function(d){return d.name;});
+    var student_info = this.base_students.map(function(m) {
+      var student = [{
+          id: m.id,
+          name: m.sortable_name
+        }],
+        scores = m.grades.map(function(n) { return {score: n.score};});
+        for (var i = 0; i < scores.length; i ++) {scores[i].assn = assn_names[i];}
+      return d3.cross(student, scores, function(a,b) {return {assn: b.assn, score: b.score, name: a.name, id: a.id};});
+    });
+    return [].concat.apply([], student_info); // flatten
   };
 };
 
@@ -187,89 +122,69 @@ BoxPlotView = function() {
       domain = [];
 
     function HeatMap(g) {
-      var xoffset = width * 0.1,
-        yoffset = height * 0.1;
+      var xoffset = width * 0.05,
+        yoffset = height * 0.1,
+        data = g.datum();
 
+      g.classed("heatmap", true);
+
+      // student id maps to y
       var y_sc = d3.scaleBand()
-        .domain(d3.range(g.data().length))
+        .domain(data.meta.students.map(function(d) {return d.id;}))
         .range([0, height - yoffset])
         .padding(0.1);
 
-      g.each(function(d,i) {
-        // d == {label, values}
-        var g = d3.select(this),
-          n = d.values.length,
-          idx = i;
-
-        var x_sc = d3.scaleBand()
-          .domain(d.values.map(function(d){ return d.name; }))
-          .range([0, width - xoffset])
-          .padding(0.1);
-
-        var c_sc = d3.scaleLinear()
-          .domain(domain)
-          .range(['white', 'green']);
-
-        // offset the row to the proper location
-        var grow = g.append("g")
-          .attr("transform", function(d,i) { return "translate(" + xoffset + "," + y_sc(idx) + ")"; });
-
-        // Do highlight of row
-        grow.selectAll("rect.hl")
-          .data([d.selected])
-          .enter()
-          .append("rect")
-            .attr("class", "hl")
-            .attr("width", width)
-            .attr("height", y_sc.bandwidth() * 1.1)
-            .attr("dy", - (y_sc.bandwidth() * 0.05))
-            .style("visibility", function(d) {return d ? "visible" : "hidden"; });
-
-        // Add/update tiles
-        var gtile  = grow.selectAll("rect.tile")
-          .data(d.values);
-        gtile.enter()
-            .append("rect")
-            .attr("class", "tile")
-            .attr("x", function(d) {
-              return x_sc(d.name);
-            })
-            .attr("height", y_sc.bandwidth())
-            .attr("width", x_sc.bandwidth())
-            .attr("fill", function(d) { return c_sc(d.value);});
-
-        // y labels
-        var glabel = g.append("g");
-        glabel.selectAll("text.label")
-          .data([d])
-            .enter()
-            .append("text")
-            .attr("class", "label")
-            .attr("x", xoffset * 0.9)
-            .attr("y", function(d) {return y_sc(idx); } )
-            .attr("dy", y_sc.bandwidth() * 0.8)
-            .attr("text-anchor", "end")
-            .text(function(d) {return "" + d.id;});
-      });
-      // x labels
-      var assn_data = g.data()[0].values.map(function(d){ return d.name; });
+      // assignments map to x
       var x_sc = d3.scaleBand()
-        .domain(assn_data)
-        .range([0, width - xoffset])
+        .domain(data.meta.assignments.map(function(d) {return d.name;}))
+        .range([xoffset, width-xoffset])
         .padding(0.1);
 
-      var gylabel = g.append("g")
-        .attr("transform",
-          "translate(" + xoffset + "," + (height-yoffset) + ")");
-      gylabel.selectAll("text.label")
-        .data(assn_data)
-        .enter()
+      // colors map to score
+      var c_sc = d3.scaleLinear()
+        .domain([
+          d3.min(data.values, function(d){return d.score;}),
+          d3.max(data.values, function(d){return d.score;})
+        ])
+        .range(['white', 'green']);
+
+      var tiles = g.selectAll("rect.tile").data(data.values);
+
+      tiles.enter()
+        .append("rect")
+          .classed("tile", true)
+          .attr("width", x_sc.bandwidth())
+          .attr("height", y_sc.bandwidth())
+          .attr("x", function(d) {
+            return x_sc(d.assn);
+          })
+          .attr("y", function(d) {return y_sc(d.id);})
+          .attr("fill", function(d) { return c_sc(d.score);});
+
+      tiles.exit().remove();
+
+      var ylabel = g.selectAll("text.ylabel")
+        .data(data.meta.students);
+
+      ylabel.enter()
         .append("text")
-        .attr("class", "label")
-        .attr("x", function(d) {return x_sc(d) + x_sc.bandwidth()/4;})
-        .attr("y", yoffset - yoffset*.75)
-        .attr("transform", function(d) {return "rotate(30, " + (x_sc(d) + x_sc.bandwidth()/4)+ "," + (yoffset - yoffset*0.75) +")"})
-        .text(function(d){return d;});
+          .attr("class", "ylabel")
+          .attr("x", xoffset * 0.9)
+          .attr("y", function(d) {return y_sc(d.id); } )
+          .attr("dy", y_sc.bandwidth() * 0.8)
+          .attr("text-anchor", "end")
+          .text(function(d) {return "" + d.id;});
+
+      var xlabel = g.selectAll("text.xlabel")
+        .data(data.meta.assignments);
+
+      xlabel.enter()
+        .append("text")
+          .attr("class", "xlabel")
+          .attr("x", function(d) { return x_sc(d.name) + x_sc.bandwidth() * 0.25;})
+          .attr("y", height - (yoffset * 0.75))
+          .attr("transform", function(d) {return "rotate(30, " + (x_sc(d.name) + x_sc.bandwidth() * 0.25)+ "," + (height - (yoffset * 0.75)) +")"})
+          .text(function(d){return d.name;});
     }
 
     HeatMap.height = function(y) {
@@ -311,27 +226,25 @@ Controller = function() {
     this.width = 100;
 
     // bind data to an svg, create a heatmap
-    var dataset = this.db.GetStudentsScores();
-    dataset.forEach(function(d) {d.selected=false;});
-    dataset[1].selected = true;
-
-    var domain = [0, 70]; // todo !hack
+    var dataset = {
+      meta: {
+        students: this.db.GetStudents(),
+        assignments: this.db.GetAssignments()
+      },
+      values: this.db.GetScores()
+    };
 
     var heatmap = d3.HeatMap()
       .width(this.width)
-      .height(this.height)
-      .domain(domain);
+      .height(this.height);
 
-    var heatmapg = d3.select("#main-view-container")
+    var svg = d3.select("#main-view-container")
       .append("svg")
-      .attr("preserveAspectRatio", "xMinYMin meet")
-      .attr("viewBox", "0 0 " + this.width + " " + this.height)
-      .selectAll("g")
-        .data(dataset)
-        .enter()
-          .append("g")
-          .attr("class", "heatmap")
-          .call(heatmap);
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", "0 0 " + this.width + " " + this.height);
+
+    svg.datum(dataset);
+    svg.call(heatmap);
 
     var list = d3.select("#nav-container")
       .append("ul")
