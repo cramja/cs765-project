@@ -54,7 +54,16 @@
             });
           }
         }
-        return table;
+        var columnTypes = {
+          sname: "k",
+          sid: "k",
+          aname: "k",
+          aid: "k",
+          score: "d.n",
+          late: "d.n",
+          posts: "d"
+        };
+        return {columns:columnTypes, table:table};
       };
 
       var data_request = new XMLHttpRequest();

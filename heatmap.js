@@ -2,6 +2,7 @@
 // A generic heatmap. Takes an element with data bound in the form
 // {x:xval, y:yval, z:zval, hover:msg}
 //
+//
 
 (function() {
   d3.heatmap = function () {

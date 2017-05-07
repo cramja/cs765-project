@@ -41,7 +41,10 @@ vis.controller = function() {
     });
 
     loader.onLoad(function(d) {
-      table.data(d); // will trigger a table on change event.
+      table.columnTypes(d.columnTypes); // first, give meta data
+      table.focusKeys(["sid","aname"]); // set initial focus information
+      table.focusDim("score");
+      table.data(d.table);              // will trigger a table on change event.
     });
 
     loader.filename("example.json"); // will trigger an onload event.
