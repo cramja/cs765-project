@@ -22,12 +22,12 @@
       var x_sc = d3.scaleBand()
         .domain(x_vals)
         .range([xoffset, width-xoffset])
-        .padding(0.1);
+        .padding(0.05);
 
       var y_sc = d3.scaleBand()
         .domain(y_vals)
         .range([0, height - yoffset])
-        .padding(0.1);
+        .padding(0.05);
 
       // colors map to score
       var c_sc = d3.scaleLinear()

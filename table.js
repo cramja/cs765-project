@@ -4,11 +4,12 @@
 
 (function(){
   vis.table = function() {
-    var data = [],       // all the tuples
+    var data = [],       // all the tuples, form: [{k1:v, k2:v, ..., }, ...]
       columnTypes = [],  // annotation which describes the column's datatypes
       focusKeys = [],    // keys which should be displayed differently
       focusDim = "",     // dimension which should be displayed in focus
       filter = null,     // function that is given a tuple. If returns true, then we view the tuple.
+      sortAttr = null,
       sort = null,       // function that takes 2 tuples as an arg
       _data = null,      // tuples after filter + sort
       onChange = function(d) {}; // on change, a reference to the filtered/sorted data is passed.
@@ -48,7 +49,8 @@
     table.columnTypes = function(d) {
       if (!arguments.length) return columnTypes;
       for(var i in d) {
-        // columnType must be: dimension, attribute.numeric, or attribute
+        // columnType must be: key, dim.numeric, or dim
+        // dims which are numeric may be aggregated.
         console.assert(["k", "d.n", "d"].includes(d[i]));
       }
       columnTypes = d;
@@ -82,6 +84,22 @@
       applyPreds(false);
       return table;
     };
+
+    table.sortAttr = function(d) {
+      if (!arguments.length) return sortAttr;
+      // simply creates a sort function based on a single attribute
+      // expects {cname:column-name, sort:asc|dsc}
+      // TODO: implement multilevel sort
+      var sortfn = function(a,b) {
+        if (d.sort == "asc") {
+          return a[d.cname] <  b[d.cname] ? -1 : a[d.cname] >  b[d.cname] ? 1 : 0;
+        }
+        return a[d.cname] <  b[d.cname] ? 1 : a[d.cname] >  b[d.cname] ? -1 : 0;
+      }
+      sortAttr = d;
+
+      return table.sort(sortfn);
+    }
 
     table.filter = function(d) {
       if (!arguments.length) return filter;

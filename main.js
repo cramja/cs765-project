@@ -7,7 +7,8 @@ vis.controller = function() {
       height = 62,
     loader = vis.canvasLoader(),
     table = vis.table(),
-    heatmap = d3.heatmap();
+    heatmap = d3.heatmap(),
+    chart = d3.chart().table(table);
 
   controller = function() {
 
@@ -22,17 +23,18 @@ vis.controller = function() {
     // div for chart
     d3.select(".bottom-focus")
       .append("div")
-        .classed("chart", true);
-
+        .classed("chart-container", true);
 
     table.onChange(function(table) {
       var hmsvg = d3.select("#heatmap-svg").datum(vis.table2heatmap(table));
       hmsvg.call(heatmap);
-      
+
+      var cdiv = d3.select(".chart-container").datum(vis.table2chart(table));
+      cdiv.call(chart);
     });
 
     loader.onLoad(function(d) {
-      table.columnTypes(d.columnTypes); // first, give meta data
+      table.columnTypes(d.columns); // first, give meta data
       table.focusKeys(["sid","aname"]); // set initial focus information
       table.focusDim("score");
       table.data(d.table);              // will trigger a table on change event.
