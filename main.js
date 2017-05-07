@@ -7,14 +7,7 @@ vis.controller = function() {
       height = 62,
     loader = vis.canvasLoader(),
     table = vis.table(),
-    heatmap = d3.heatmap(),
-    data2heatmap = function (tbl) {  // mapping function from the data table to a heatmap
-      return tbl.map(function(d) {return {x: d.aname, y:d.sid, z:d.score};});
-    },
-    navpanel = vis.navPanel(),
-    data2navpanel = function(tbl) {
-      return d3.set(tbl, function(d) {return d.sname;}).values();
-    };
+    heatmap = d3.heatmap();
 
   controller = function() {
 
@@ -26,18 +19,16 @@ vis.controller = function() {
         .attr("viewBox", "0 0 " + width + " " + height);
     heatmap.width(width).height(height);
 
-    // ul for navigation view
-    navpanel = navpanel.table(table);
-    d3.select("#nav-container")
-      .classed("navpanel",true)
-      .append("ul");
+    // div for chart
+    d3.select(".bottom-focus")
+      .append("div")
+        .classed("chart", true);
 
-    table.onChange(function(data) {
-      var hmsvg = d3.select("#heatmap-svg").datum(data2heatmap(data));
+
+    table.onChange(function(table) {
+      var hmsvg = d3.select("#heatmap-svg").datum(vis.table2heatmap(table));
       hmsvg.call(heatmap);
-
-      var navdiv = d3.select(".navpanel").datum(data2navpanel(data));
-      navdiv.call(navpanel);
+      
     });
 
     loader.onLoad(function(d) {

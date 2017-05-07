@@ -38,7 +38,7 @@
       }
 
       _data = tmp;
-      onChange(table());
+      onChange(table);
     }
 
     function table() {

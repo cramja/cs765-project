@@ -115,4 +115,19 @@
 
     return heatmap;
   };
+
+  vis.table2heatmap = function(table) {
+    var xcol = table.focusKeys()[0],
+      ycol = table.focusKeys()[1],
+      zcol = table.focusDim(),
+      hmdata = [],
+      data = table();
+
+      for (var i = 0; i < data.length; i++) {
+        var row = data[i];
+        hmdata.push({x: row[xcol], y: row[ycol], z: row[zcol]});
+      }
+
+      return hmdata;
+  };
 })();
