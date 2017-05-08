@@ -5,8 +5,9 @@
 (function(){
   vis.table = function() {
     var data = [],       // all the tuples, form: [{k1:v, k2:v, ..., }, ...]
-      columnTypes = [],  // annotation which describes the column's datatypes
-      focusKeys = [],    // keys which should be displayed differently
+      columnTypes = [],  // [{cname:ctype}, ... ]
+                         // annotation which describes the column's datatypes
+      focusKeys = [],    // [cname, cname] keys which should be displayed differently
       focusDim = "",     // dimension which should be displayed in focus
       filter = null,     // function that is given a tuple. If returns true, then we view the tuple.
       sortAttr = null,
@@ -60,14 +61,14 @@
     table.focusKeys = function(d) {
       if (!arguments.length) return focusKeys;
       focusKeys = d;
-      // todo: alert listeners of change.
+      onChange(table);
       return table;
     };
 
     table.focusDim = function(d) {
       if (!arguments.length) return focusDim;
       focusDim = d;
-      // todo: alert listeners of change.
+      onChange(table);
       return table;
     };
 

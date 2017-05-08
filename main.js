@@ -7,7 +7,7 @@ vis.controller = function() {
       height = 62,
     loader = vis.canvasLoader(),
     table = vis.table(),
-    heatmap = d3.heatmap(),
+    heatmap = d3.heatmap().table(table),
     chart = d3.chart().table(table);
 
   controller = function() {
