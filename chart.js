@@ -28,7 +28,7 @@
           .classed("dsc", function(d) {return d.sort == "dsc"; })
           .text(function(d) { return d.name; })
           .on("click", function(d){
-            if (d.type == "k") {
+            if (d.type == "k" || d.type == "d.n") {
               var sortType = "asc";
               if (d.sort == "asc") {
                 sortType = "dsc";
@@ -38,7 +38,6 @@
               table.sortAttr({cname:d.name, sort:sortType});
             }
           })
-          .on("dblclick", function(d){alert("dl");})
         .exit().remove();
 
       // create the table body if it does not exist.

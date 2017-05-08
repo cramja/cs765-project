@@ -63,7 +63,7 @@
           var tt = d3.select(".hmtooltip");
             tt.transition()    
               .duration(50)
-              .style("opacity", .9);
+              .style("opacity", 1);
 
             tt.html("x: " + d.x + "<br>y: " + d.y + "<br>z: " + d.z)  
               .style("left", (d3.event.pageX + 28) + "px")   
