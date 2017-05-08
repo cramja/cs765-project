@@ -11,76 +11,61 @@
       g.classed("chart", true);
 
       // create the container elements if they do not exist.
-      if (!g.select(".th").node()) {
-        g.append("div").classed("th", true);
+      if (!g.select("tr.hd").node()) {
+        g.append("tr").classed("hd", true);
       }
 
       // create header row if this is the initialization:
-      var th = g.select(".th").selectAll(".td")
+      var th = g.select("tr.hd").selectAll("th")
         .data(data.cinfo);
 
       th.enter()
-        .append("div")
-          .classed("td", true)
-        .merge(th)
-          .classed("bold", function (d) {return d.type == "k"; })
-          .classed("asc", function(d) {return d.sort == "asc"; })
-          .classed("dsc", function(d) {return d.sort == "dsc"; })
-          .text(function(d) { return d.name; })
-          .on("click", function(d){
-            if (d.type == "k" || d.type == "d.n") {
-              var sortType = "asc";
-              if (d.sort == "asc") {
-                sortType = "dsc";
-              } else if (d.sort == "dsc") {
-                sortType = null;
-              }
-              table.sortAttr({cname:d.name, sort:sortType});
+        .append("th")
+      .merge(th)
+        .classed("bold", function (d) {return d.type == "k"; })
+        .classed("asc", function(d) {return d.sort == "asc"; })
+        .classed("dsc", function(d) {return d.sort == "dsc"; })
+        .text(function(d) { return d.name; })
+        .on("click", function(d){
+          if (d.type == "k" || d.type == "d.n") {
+            var sortType = "asc";
+            if (d.sort == "asc") {
+              sortType = "dsc";
+            } else if (d.sort == "dsc") {
+              sortType = null;
             }
-          })
-        .exit().remove();
+            table.sortAttr({cname:d.name, sort:sortType});
+          }
+        })
+      .exit()
+        .remove();
 
       // create the table body if it does not exist.
-      if (!g.select(".tb").node()) {
-        g.append("div").classed("tb", true);
+      if (!g.select("tbody").node()) {
+        g.append("tbody");
       }
-      var tr = g.select(".tb")
-        .selectAll(".tr")
+
+      var tr = g.select("tbody").selectAll("tr")
         .data(data.cdata);
 
-      tr = tr.enter()
-        .append("div")
-          .classed("tr", true)
-        .merge(tr);
+      var td = tr.enter()
+        .append("tr")
+      .merge(tr)
+      .selectAll("td")
+        .data(function(s) {return s;});
+          
+      tr.exit().remove();
 
-      var td = tr.selectAll(".td")
-          .data(function(s) {return s;});
       td.enter()
-          .append("div")
-            .classed("td", true)
-          .merge(td)
+          .append("td")
+        .merge(td)
           .text(function(d,i){
             if (data.cinfo[i].type == 'k' ||
                 data.cinfo[i].type == 'd.n') {
               return d.value;
             }
-            return JSON.stringify(d.value);
+            return JSON.stringify(d.value[0]);
           });
-
-      //// create row elements
-      // var rowDivs = g.selectAll(".crow").data(data.cdata);
-      // rowDivs.enter()
-      //   .append("div")
-      //     .classed("crow", true);
-      // rowDivs.exit().remove();
-
-      // g.selectAll(".crow").selectAll(".cele")
-      //     .data(function(d){
-      //       return d3.keys(d).map(function(k){return d[k];});
-      //     });
-
-
-      // create rows
     }
 
     chart.table = function(d) {

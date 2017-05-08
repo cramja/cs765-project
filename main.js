@@ -11,6 +11,17 @@ vis.controller = function() {
     chart = d3.chart().table(table);
 
   controller = function() {
+    // callback for loader
+    d3.select("#file-picker").node().onchange = function(event){
+      var input = event.target;
+
+      var reader = new FileReader();
+      reader.onload = function(){
+          var text = reader.result;
+          loader.baseData(JSON.parse(text)); // updates vis
+        };
+      reader.readAsText(input.files[0]);
+    };
 
     // svg for heat map
     var svg = d3.select("#main-view-container")
@@ -22,15 +33,15 @@ vis.controller = function() {
 
     // div for chart
     d3.select(".bottom-focus")
-      .append("div")
+      .append("table")
         .classed("chart-container", true);
 
     table.onChange(function(table) {
       var hmsvg = d3.select("#heatmap-svg").datum(vis.table2heatmap(table));
       hmsvg.call(heatmap);
 
-      var cdiv = d3.select(".chart-container").datum(vis.table2chart(table));
-      cdiv.call(chart);
+      var ctable = d3.select(".chart-container").datum(vis.table2chart(table));
+      ctable.call(chart);
     });
 
     loader.onLoad(function(d) {

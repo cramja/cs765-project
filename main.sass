@@ -68,6 +68,10 @@ article
 .article-column-right-inset
   padding-left: 10px
   padding-top: 10px
+  height: 100%
+
+.half-height
+  height: 50%
 
 #nav-container
   height: 100%
@@ -87,6 +91,8 @@ article > footer
 
 svg
   width: 100%
+  height: 100%
+  margin: 0px auto
 
 .bottom-focus
   background-color: $dark-gray
@@ -138,11 +144,21 @@ svg
   background-color: $light-gray
   width: 100%
   height: 50%
+  display: block
+  overflow-y: scroll
 
-  .th
+  tbody
+    background-color: lighten($light-gray, 10%)
+
+  th
     background-color: darken($light-gray, 20%)
     width: 100%
     color: $light-font
+    text-align: left
+    cursor: pointer
+
+  th:hover
+    color: lighten($light-font, 50%)
 
   .asc::after 
     content: '▲'
@@ -152,20 +168,6 @@ svg
 
   .bold
     font-weight: bold
-
-  .td
-    width: 100px
-    display: inline-block
-    overflow: hidden
-    height: 20px
-
-  .tr
-    display: table-row
-    width: 700px
-
-  .tb
-    height: 100%
-    overflow-y: scroll
-    background-color: lighten($light-gray, 10%)
+    
 
 

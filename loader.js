@@ -7,31 +7,8 @@
     var baseData = "", // loaded JSON
       filename = "example.json",
       data = [],       // processed table
-      onLoad = function() {};
-
-    function canvasLoader() {
-      // warning: async call may not have completed. Set onLoad
-      return data;
-    }
-
-    canvasLoader.baseData = function(d) {
-      if(!arguments.length) return baseData;
-      baseData = d;
-      // process base data here
-      return canvasLoader;
-    };
-
-    canvasLoader.onLoad = function(f) {
-      if(!arguments.length) return onLoad;
-      onLoad = f;
-      return canvasLoader;
-    };
-
-    canvasLoader.filename = function(d) {
-      if(!arguments.length) return filename;
-      filename = d;
-      // fetch file, process file
-      var process = function(data) {
+      onLoad = function() {},
+      process = function(data) {
         // Do a rename/select
         var assnInf = data.assignments.map(function(d) {return {aname: d.name, aid: d.id, aprompt: d.prompted};});
         var stdInf = data.students.map(function(d) {return {sname: d.sortable_name, sid: d.id, grades: d.grades};});
@@ -66,13 +43,35 @@
         return {columns:columnTypes, table:table};
       };
 
+    function canvasLoader() {
+      // warning: async call may not have completed. Set onLoad
+      return data;
+    }
+
+    canvasLoader.baseData = function(d) {
+      if(!arguments.length) return baseData;
+      baseData = d;
+      data = process(baseData);
+      onLoad(data);
+      return canvasLoader;
+    };
+
+    canvasLoader.onLoad = function(f) {
+      if(!arguments.length) return onLoad;
+      onLoad = f;
+      return canvasLoader;
+    };
+
+    canvasLoader.filename = function(d) {
+      if(!arguments.length) return filename;
+      filename = d;
+      // fetch file, process file
+
       var data_request = new XMLHttpRequest();
       data_request.open('GET', filename);
       data_request.onreadystatechange = function() {
         if(data_request.readyState === XMLHttpRequest.DONE && data_request.status === 200) {
-          baseData = JSON.parse(data_request.responseText);
-          data = process(baseData);
-          onLoad(data);
+          canvasLoader.baseData(JSON.parse(data_request.responseText));
         } else if (data_request.status !== 200) {
           console.log("Error loading data from source, status: " + data_request.status);
         }

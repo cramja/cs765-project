@@ -234,4 +234,15 @@
 
       return hmdata;
   };
+
+  // takes a table reference and turns it into
+  // {
+  //  x:[xval1, xval2, ..., avg],
+  //  y:[yval1, yval2, ..., avg],
+  //  z:[{x:v, y:v, z:v}],
+  //  attrmeta: {x:{name, y:name, z:name}
+  // }
+  // d3.layout.table2heatmap = function(d) {
+
+  // }
 })();
