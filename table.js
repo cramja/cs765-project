@@ -86,6 +86,46 @@
       return table;
     };
 
+    table.avgs = function() {
+      // averages for the 2 focus attributes.
+      // terrible code
+      var av = [],
+        sums0 = {},
+        sums1 = {},
+        x = focusKeys[0],
+        y = focusKeys[1];
+        z = focusDim;
+      for (var i = 0; i < data.length; i++) {
+        var di = data[i];
+        if (!sums0[di[x]]) sums0[di[x]] = 0;
+        sums0[di[x]] += di[z];
+        if (!sums1[di[y]]) sums1[di[y]] = 0;
+        sums1[di[y]] += di[z];
+      }
+      var grandtotal = 0;
+      d3.keys(sums0).forEach(function(k) {
+        var avk = {};
+        avk.x = k;
+        avk.y = "AVG";
+        avk.z = sums0[k] / d3.keys(sums1).length;
+        grandtotal += sums0[k];
+        av.push(avk);
+      });
+      d3.keys(sums1).forEach(function(k) {
+        var avk = {};
+        avk.x = "AVG";
+        avk.y = k;
+        avk.z = sums1[k] / d3.keys(sums0).length;
+        av.push(avk);
+      });
+      av.push({
+        x:"AVG",
+        y:"AVG",
+        z:grandtotal/(d3.keys(sums0).length * d3.keys(sums1).length)
+      })
+      return av;
+    };
+
     table.sortAttr = function(d) {
       if (!arguments.length) return sortAttr;
       // simply creates a sort function based on a single attribute

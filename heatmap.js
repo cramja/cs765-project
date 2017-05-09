@@ -39,12 +39,22 @@
         .padding(0.05);
 
       // colors map to score
+      var min = d3.min(data, function(d){return d.z;});
       var c_sc = d3.scaleLinear()
         .domain([
-          d3.min(data, function(d){return d.z;}),
+          min,
           d3.max(data, function(d){return d.z;})
         ])
         .range(['white', 'green']);
+      if (min < 0) {
+        c_sc = d3.scaleLinear()
+        .domain([
+          min,
+          0,
+          d3.max(data, function(d){return d.z;})
+        ])
+        .range(['red', 'white', 'green']);
+      }
 
       var tiles = g.selectAll("rect.tile").data(data);
 
@@ -230,6 +240,13 @@
       for (var i = 0; i < data.length; i++) {
         var row = data[i];
         hmdata.push({x: row[xcol], y: row[ycol], z: row[zcol]});
+      }
+
+      // hack. who cares at this point.
+      var avgs = table.avgs();
+      for (var i = 0; i < avgs.length; i++) {
+        var row = avgs[i];
+        hmdata.push({x: row.x, y: row.y, z: row.z});
       }
 
       return hmdata;
