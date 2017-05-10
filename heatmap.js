@@ -15,9 +15,10 @@
       var xoffset_r = width * 0.01,
         xoffset_l = width * 0.15,
         yoffset = height * 0.15,
-        data = g.datum(),
-        x_vals = d3.set(data, function(d) {return d.x;}).values(),
-        y_vals = d3.set(data, function(d) {return d.y;}).values();
+        data = g.datum().values,
+        meta = g.datum().meta,
+        x_vals = d3.set(data, function(d) {return d.x;}).values().map(function(d){return {name:d, attr:meta.x};}),
+        y_vals = d3.set(data, function(d) {return d.y;}).values().map(function(d){return {name:d, attr:meta.y};});
 
       g.classed("heatmap", true);
 
@@ -29,12 +30,12 @@
       }
 
       var x_sc = d3.scaleBand()
-        .domain(x_vals)
+        .domain(x_vals.map(function(d){return d.name;}))
         .range([xoffset_l, width-xoffset_r])
         .padding(0.05);
 
       var y_sc = d3.scaleBand()
-        .domain(y_vals)
+        .domain(y_vals.map(function(d){return d.name;}))
         .range([0, height - yoffset])
         .padding(0.05);
 
@@ -99,39 +100,59 @@
 
       ylabel.enter()
         .append("text")
+      .merge(ylabel)
         .attr("class", "ylabel")
         .attr("x", xoffset_l * 0.9)
-        .attr("y", function(d) {return y_sc(d); } )
+        .attr("y", function(d) {return y_sc(d.name); } )
         .attr("dy", y_sc.bandwidth() * 0.8)
         .attr("text-anchor", "end")
-        .text(function(d) {return "" + d;});
+        .text(function(d) {return "" + d.name;})
+        .on("click", function(d){
+          if (d.name == "AVG"){
+            // get where y val == avg
+            var avgY = [];
+            for (var i = 0; i < data.length; i++) {
+              if (data[i].y == "AVG")
+                avgY.push(data[i]);
+            }
+            // sort on z
+            avgY = avgY.sort(function(a,b){return a.z > b.z ? -1 : a.z < b.z ? 1 : 0;});
+            // create a priority index on xvals
+            xPriority = {};
+            for(var i in avgY) {
+              xPriority[avgY[i].x] = parseInt(i);
+            }
+            // now sort, first according to xPriority, then y value
+            table.sort(function(ra,rb){
+              var va = xPriority[ra[meta.x]] * 100000 + ra[meta.z],
+                vb = xPriority[rb[meta.x]] * 100000 + rb[meta.z];
+              return va > vb ? -1 : va < vb ? 1 : 0;
 
-      ylabel.attr("x", xoffset_l * 0.9)
-        .attr("y", function(d) {return y_sc(d); } )
-        .attr("dy", y_sc.bandwidth() * 0.8)
-        .attr("text-anchor", "end")
-        .text(function(d) {return "" + d;});
+            });
 
-      ylabel.exit().remove();
+          }
+          table.sort(function(ra, rb){
+            var va = ra[meta.y] == d.name ? ra[meta.z] + 100000 : ra[meta.z],
+              vb = rb[meta.y] == d.name ? rb[meta.z] + 100000 : rb[meta.z];
+            return va > vb ? -1 : va < vb ? 1 : 0;
+          });
+        })
+      .exit()
+        .remove();
 
       var xlabel = g.selectAll("text.xlabel")
         .data(x_vals);
 
       xlabel.enter()
         .append("text")
+      .merge(xlabel)
         .attr("class", "xlabel")
-        .attr("x", function(d) { return x_sc(d) + x_sc.bandwidth() * 0.25;})
+        .attr("x", function(d) { return x_sc(d.name) + x_sc.bandwidth() * 0.25;})
         .attr("y", height - (yoffset * 0.75))
-        .attr("transform", function(d) {return "rotate(30, " + (x_sc(d) + x_sc.bandwidth() * 0.25)+ "," + (height - (yoffset * 0.75)) +")"})
-        .text(function(d){return d;});
-
-      xlabel.attr("class", "xlabel")
-        .attr("x", function(d) { return x_sc(d) + x_sc.bandwidth() * 0.25;})
-        .attr("y", height - (yoffset * 0.75))
-        .attr("transform", function(d) {return "rotate(30, " + (x_sc(d) + x_sc.bandwidth() * 0.25)+ "," + (height - (yoffset * 0.75)) +")"})
-        .text(function(d){return d;});
-
-      xlabel.exit().remove();
+        .attr("transform", function(d) {return "rotate(30, " + (x_sc(d.name) + x_sc.bandwidth() * 0.25)+ "," + (height - (yoffset * 0.75)) +")"})
+        .text(function(d){return d.name;})
+      .exit()
+        .remove();
 
       // create control objects
       if (d3.select("#heatmap-control").node()) {
@@ -249,7 +270,14 @@
         hmdata.push({x: row.x, y: row.y, z: row.z});
       }
 
-      return hmdata;
+      return {
+        meta: {
+          x: table.focusKeys()[0],
+          y: table.focusKeys()[1],
+          z: table.focusDim()
+        },
+        values: hmdata
+      };
   };
 
   // takes a table reference and turns it into

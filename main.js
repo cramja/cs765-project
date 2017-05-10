@@ -30,14 +30,15 @@ vis.controller = function() {
         .attr("preserveAspectRatio", "xMinYMin meet")
         .attr("viewBox", "0 0 " + width + " " + height);
     heatmap.width(width).height(height);
-    //d3.select("#main-view-container").node().onresize = function(e){
-    // todo: how the heck to nicely size the SVG?  
-    // window.onresize = function(e){
-    //   console.log("lol");
-    //   var con = d3.select("#main-view-container").node();
-    //   heatmap.width(con.offsetWidth).height(con.offsetHeight);
-    //   d3.select("svg").attr("viewBox", "0 0 " + con.offsetWidth + " " + con.offsetHeight);
-    //   console.log(con.offsetWidth);
+
+    // window.onresize = function(e) {
+    //   var boundRect = d3.select("#main-view-container").node()
+    //     .getBoundingClientRect();
+    //   var svg = d3.select("#main-view-container").select("svg")
+    //     .attr("width", document.documentElement.clientWidth)
+    //     .attr("height", document.documentElement.clientHeight);
+    //   heatmap.width(document.documentElement.clientWidth).height(document.documentElement.clientHeight);
+    //     console.log("hacks");
     // };
 
     // div for chart

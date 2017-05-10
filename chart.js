@@ -22,9 +22,9 @@
       th.enter()
         .append("th")
       .merge(th)
-        .classed("bold", function (d) {return d.type == "k"; })
-        .classed("asc", function(d) {return d.sort == "asc"; })
-        .classed("dsc", function(d) {return d.sort == "dsc"; })
+        .classed("bold", function (d) { return d.type == "k"; })
+        .classed("asc", function(d) { return d.sort == "asc"; })
+        .classed("dsc", function(d) { return d.sort == "dsc"; })
         .text(function(d) { return d.name; })
         .on("click", function(d){
           if (d.type == "k" || d.type == "d.n") {

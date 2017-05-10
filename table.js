@@ -12,6 +12,7 @@
       filter = null,     // function that is given a tuple. If returns true, then we view the tuple.
       sortAttr = null,
       sort = null,       // function that takes 2 tuples as an arg
+      sortBy = null, // last minute hack
       _data = null,      // tuples after filter + sort
       onChange = function(d) {}; // on change, a reference to the filtered/sorted data is passed.
 
@@ -126,6 +127,12 @@
       return av;
     };
 
+    table.sortBy = function(d) {
+      if (!arguments.length) return sortBy;
+      sortBy = d;
+      onChange(table);
+    }
+
     table.sortAttr = function(d) {
       if (!arguments.length) return sortAttr;
       // simply creates a sort function based on a single attribute
@@ -151,7 +158,7 @@
     };
 
     table.onChange = function(d) {
-      if (!arguments.length) return d;
+      if (!arguments.length) return onChange;
       onChange = d;
       return table;
     };
